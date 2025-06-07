@@ -1,4 +1,4 @@
-package com.example.backend.adaptor.out.web.toss.executor;
+package com.example.backend.adapter.out.web.toss.executor;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

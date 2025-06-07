@@ -1,16 +1,16 @@
-package com.example.backend.adaptor.in.web.api;
+package com.example.backend.adapter.in.web.api;
 
-import com.example.backend.adaptor.in.web.dto.request.TossPaymentConfirmRequest;
-import com.example.backend.adaptor.in.web.dto.response.ApiResponse;
-import com.example.backend.adaptor.out.web.toss.executor.TossPaymentExecutor;
-import com.example.backend.common.WebAdaptor;
+import com.example.backend.adapter.in.web.dto.request.TossPaymentConfirmRequest;
+import com.example.backend.adapter.in.web.dto.response.ApiResponse;
+import com.example.backend.adapter.out.web.toss.executor.TossPaymentExecutor;
+import com.example.backend.common.WebAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-@WebAdaptor
+@WebAdapter
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/toss")

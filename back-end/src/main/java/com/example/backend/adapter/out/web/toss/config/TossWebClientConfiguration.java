@@ -1,4 +1,4 @@
-package com.example.backend.adaptor.out.web.toss.config;
+package com.example.backend.adapter.out.web.toss.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
