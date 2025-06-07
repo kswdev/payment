@@ -1,4 +1,4 @@
-package com.example.backend.adaptor.in.web.dto.response;
+package com.example.backend.adapter.in.web.dto.response;
 
 public record ApiResponse<T>(
         int status,
