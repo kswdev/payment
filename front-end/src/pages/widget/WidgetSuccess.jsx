@@ -14,7 +14,7 @@ export function WidgetSuccessPage() {
         paymentKey: searchParams.get("paymentKey"),
       };
 
-      const response = await fetch("/api/confirm/widget", {
+      const response = await fetch("/api/v1/toss/confirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

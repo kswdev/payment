@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "TossPayments Express + React Sample",
   "scripts": {
-    "dev": "concurrently \"vite\" \"nodemon server.js\"",
+    "dev": "vite",
     "build": "vite build"
   },
   "dependencies": {
