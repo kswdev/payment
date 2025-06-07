@@ -1,4 +1,4 @@
-package com.example.backend.adaptor.out.web.executor;
+package com.example.backend.adaptor.out.web.toss.executor;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 public class TossPaymentExecutor {
 
     private final WebClient tossPaymentWebClient;
-    private final static String URL = "/v1/toss/confirm";
+    private final static String URL = "/v1/payments/confirm";
 
     public Mono<String> execute(String paymentKey, String orderId, String amount) {
         return tossPaymentWebClient.post()
