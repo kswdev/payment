@@ -1,4 +1,4 @@
-package com.example.backend.adaptor.in.web.dto.request;
+package com.example.backend.adapter.in.web.dto.request;
 
 public record TossPaymentConfirmRequest(
         String paymentKey,
