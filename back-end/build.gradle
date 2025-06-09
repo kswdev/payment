@@ -37,3 +37,9 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+test {
+    useJUnitPlatform {
+        excludeTags 'TooLongTime'
+    }
+}

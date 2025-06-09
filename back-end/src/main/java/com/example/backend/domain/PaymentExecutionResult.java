@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Getter
 public class PaymentExecutionResult {
@@ -43,8 +44,8 @@ public class PaymentExecutionResult {
         TossPaymentError error = TossPaymentError.get(response.getStatus());
         PaymentExtraDetails details = new PaymentExtraDetails(
                 PaymentType.valueOf(response.getType()),
-                PaymentMethod.valueOf(response.getMethod()),
-                response.getApprovedAt(),
+                PaymentMethod.get(response.getMethod()),
+                OffsetDateTime.parse(response.getApprovedAt()).toLocalDateTime(),
                 response.getOrderName(),
                 PSPConfirmationStatus.valueOf(response.getStatus()),
                 response.getTotalAmount(),

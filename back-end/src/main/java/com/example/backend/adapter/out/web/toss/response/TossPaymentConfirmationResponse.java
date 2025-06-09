@@ -3,7 +3,6 @@ package com.example.backend.adapter.out.web.toss.response;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -21,8 +20,8 @@ public class TossPaymentConfirmationResponse {
     private Long totalAmount;
     private Long balanceAmount;
     private String status;
-    private LocalDateTime requestedAt;
-    private LocalDateTime approvedAt;
+    private String requestedAt;
+    private String approvedAt;
     private Boolean useEscrow;
     private String lastTransactionKey;
     private Long suppliedAmount;
@@ -42,7 +41,7 @@ public class TossPaymentConfirmationResponse {
     private Checkout checkout;
     private EasyPay easyPay;
     private String country;
-    private Failure failure;
+    private TossFailureResponse tossFailureResponse;
     private CashReceipt cashReceipt;
     private List<CashReceiptDetail> cashReceipts;
     private Discount discount;
@@ -57,7 +56,7 @@ public class TossPaymentConfirmationResponse {
         private Long refundableAmount;
         private Long transferDiscountAmount;
         private Long easyPayDiscountAmount;
-        private LocalDateTime canceledAt;
+        private String canceledAt;
         private String transactionKey;
         private String receiptKey;
         private String cancelStatus;
@@ -88,7 +87,7 @@ public class TossPaymentConfirmationResponse {
         private String accountNumber;
         private String bankCode;
         private String customerName;
-        private LocalDateTime dueDate;
+        private String dueDate;
         private String refundStatus;
         private Boolean expired;
         private String settlementStatus;
@@ -148,7 +147,7 @@ public class TossPaymentConfirmationResponse {
 
     @Getter
     @NoArgsConstructor
-    public static class Failure {
+    public static class TossFailureResponse {
         private String code;
         private String message;
     }
@@ -178,9 +177,9 @@ public class TossPaymentConfirmationResponse {
         private Integer amount;
         private Integer taxFreeAmount;
         private String issueStatus;
-        private Failure failure;
+        private TossFailureResponse tossFailureResponse;
         private String customerIdentityNumber;
-        private LocalDateTime requestedAt;
+        private String requestedAt;
     }
 
     @Getter

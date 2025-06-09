@@ -2,6 +2,7 @@ package com.example.backend.adapter.in.web.dto.request;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public record CheckOutRequest(
     Long cartId,
@@ -15,6 +16,6 @@ public record CheckOutRequest(
                 1L,
                 List.of(1L, 2L, 3L),
                 1L,
-                LocalDateTime.now().toString());
+                UUID.randomUUID().toString());
     }
 }

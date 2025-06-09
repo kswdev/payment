@@ -18,6 +18,8 @@ export function WidgetCheckoutPage() {
   });
   const [ready, setReady] = useState(false);
   const [widgets, setWidgets] = useState(null);
+  const [order, setOrder] = useState(null);
+
 
   useEffect(() => {
     async function fetchPaymentWidgets() {
@@ -33,17 +35,6 @@ export function WidgetCheckoutPage() {
         // const widgets = tossPayments.widgets({ customerKey: ANONYMOUS });
 
         setWidgets(widgets);
-
-        const checkoutResponse = await fetch("/api/checkout")
-            .then((res) => res.json());
-
-        setAmount({
-          currency: "KRW",
-          value: checkoutResponse.amount,
-        });
-
-        console.log(checkoutResponse);
-
       } catch (error) {
         console.error("Error fetching payment widget:", error);
       }
@@ -62,7 +53,22 @@ export function WidgetCheckoutPage() {
       // TODO: 위젯의 결제금액을 결제하려는 금액으로 초기화하세요.
       // TODO: renderPaymentMethods, renderAgreement, requestPayment 보다 반드시 선행되어야 합니다.
       // @docs https://docs.tosspayments.com/sdk/v2/js#widgetssetamount
-      await widgets.setAmount(amount);
+      const checkoutResponse = await fetch("/api/checkout")
+          .then((res) => res.json());
+
+      const newAmount = {
+        currency: "KRW",
+        value: checkoutResponse.amount,
+      };
+
+      setAmount(newAmount)
+
+      setOrder({
+        orderId: checkoutResponse.orderId,
+        orderName: checkoutResponse.orderName,
+      })
+      
+      await widgets.setAmount(newAmount);
 
       await Promise.all([
         // ------  결제 UI 렌더링 ------
@@ -140,8 +146,8 @@ export function WidgetCheckoutPage() {
               // 결제를 요청하기 전에 orderId, amount를 서버에 저장하세요.
               // 결제 과정에서 악의적으로 결제 금액이 바뀌는 것을 확인하는 용도입니다.
               await widgets.requestPayment({
-                orderId: generateRandomString(), // 고유 주문 번호
-                orderName: "토스 티셔츠 외 2건",
+                orderId: order.orderId, // 고유 주문 번호
+                orderName: order.orderName,
                 successUrl: window.location.origin + "/widget/success", // 결제 요청이 성공하면 리다이렉트되는 URL
                 failUrl: window.location.origin + "/fail", // 결제 요청이 실패하면 리다이렉트되는 URL
                 customerEmail: "customer123@gmail.com",
