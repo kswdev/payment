@@ -3,21 +3,18 @@ package com.example.backend.adapter.out.web.toss.exception;
 import com.example.backend.domain.PaymentStatus;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-@ToString
 @Getter
 public class PSPConfirmationException extends RuntimeException {
-    private String message;
-    private String errorCode;
-    private boolean isSuccess;
-    private boolean isFailure;
-    private boolean isUnknown;
-    private boolean isRetryable;
-    private Throwable cause;
+    private final String message;
+    private final String errorCode;
+    private final boolean isSuccess;
+    private final boolean isFailure;
+    private final boolean isUnknown;
+    private final boolean isRetryable;
 
     @Builder
     public PSPConfirmationException(String message, String errorCode, boolean isSuccess, boolean isFailure, boolean isUnknown, boolean isRetryable, Throwable cause) {
@@ -27,7 +24,6 @@ public class PSPConfirmationException extends RuntimeException {
         this.isFailure = isFailure;
         this.isUnknown = isUnknown;
         this.isRetryable = isRetryable;
-        this.cause = cause;
         init();
     }
 
