@@ -34,6 +34,24 @@ public class PaymentEvent {
         this.paymentOrders = paymentOrders;
     }
 
+    public boolean isSuccess() {
+        return this.paymentOrders.stream()
+                .allMatch(paymentOrder ->
+                        paymentOrder.getPaymentStatus() == PaymentStatus.SUCCESS);
+    }
+
+    public boolean isFailure() {
+        return this.paymentOrders.stream()
+                .noneMatch(paymentOrder ->
+                        paymentOrder.getPaymentStatus() == PaymentStatus.SUCCESS);
+    }
+
+    public boolean isUnknown() {
+        return this.paymentOrders.stream()
+                .anyMatch(paymentOrder ->
+                        paymentOrder.getPaymentStatus() == PaymentStatus.UNKNOWN);
+    }
+
     public Long totalAmount() {
         return this.paymentOrders.stream()
                 .map(PaymentOrder::getAmount)

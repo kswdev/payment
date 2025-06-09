@@ -8,6 +8,14 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+logging:
+  level:
+    org.springframework:
+      web: DEBUG
+      r2dbc: DEBUG
+      transaction: DEBUG
+
+
 PSP:
   toss:
     url: https://api.tosspayments.com

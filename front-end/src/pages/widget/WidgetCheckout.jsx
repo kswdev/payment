@@ -33,6 +33,17 @@ export function WidgetCheckoutPage() {
         // const widgets = tossPayments.widgets({ customerKey: ANONYMOUS });
 
         setWidgets(widgets);
+
+        const checkoutResponse = await fetch("/api/checkout")
+            .then((res) => res.json());
+
+        setAmount({
+          currency: "KRW",
+          value: checkoutResponse.amount,
+        });
+
+        console.log(checkoutResponse);
+
       } catch (error) {
         console.error("Error fetching payment widget:", error);
       }

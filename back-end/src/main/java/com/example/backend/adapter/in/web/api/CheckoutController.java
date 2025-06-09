@@ -7,7 +7,6 @@ import com.example.backend.common.WebAdapter;
 import com.example.backend.domain.CheckoutResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -22,13 +21,14 @@ public class CheckoutController {
 
     @GetMapping("/checkout")
     public Mono<CheckoutResult> checkout(
-            @RequestBody CheckOutRequest request
+            //@RequestBody CheckOutRequest request
     ) {
+        CheckOutRequest request = CheckOutRequest.defaultRequest();
         CheckoutCommand command = new CheckoutCommand(
                 request.cartId(),
                 request.productIds(),
                 request.buyerId(),
-                UUID.fromString(request.toString()).toString()
+                request.seed()
         );
         return checkoutUseCase.checkout(command);
     }

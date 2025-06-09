@@ -25,7 +25,7 @@ public class R2DBCPaymentRepository implements PaymentRepository {
     private static final String LAST_INSERT_ID = "SELECT LAST_INSERT_ID()".trim();
 
     private static final String INSERT_PAYMENT_ORDER_QUERY = """
-                INSERT INTO payment_order (payment_event_id, seller_id, order_id, product_id, amount, payment_order_status)
+                INSERT INTO payment_order (payment_event_id, seller_id, order_id, product_id, amount, order_status)
                 VALUES
     """.trim();
 
