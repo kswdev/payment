@@ -1,6 +1,9 @@
 package com.example.backend.application.service;
 
+import com.example.backend.adapter.out.persistence.exception.PaymentValidationException;
 import com.example.backend.adapter.out.web.toss.PaymentExecutorWebAdapter;
+import com.example.backend.adapter.out.web.toss.exception.PSPConfirmationException;
+import com.example.backend.adapter.out.web.toss.exception.TossPaymentError;
 import com.example.backend.adapter.out.web.toss.executor.PaymentExecutor;
 import com.example.backend.application.command.CheckoutCommand;
 import com.example.backend.application.command.PaymentConfirmCommand;
@@ -244,5 +247,93 @@ class PaymentConfirmServiceTest {
 
         assertThat(paymentConfirmationResult.getStatus()).isEqualTo(PaymentStatus.UNKNOWN);
         assertTrue(paymentEvent.isUnknown());
+    }
+
+    @Test
+    void should_handle_PSPConfirmationException() {
+        String orderId = UUID.randomUUID().toString();
+
+        CheckoutCommand command = new CheckoutCommand(1L, List.of(1L, 2L, 3L), 1L, orderId);
+
+        CheckoutResult checkoutResult = checkoutUseCase.checkout(command).block();
+
+        assertNotNull(checkoutResult);
+        PaymentConfirmCommand paymentConfirmCommand = new PaymentConfirmCommand(
+                UUID.randomUUID().toString(),
+                orderId,
+                checkoutResult.getAmount()
+        );
+
+
+        PaymentConfirmService paymentConfirmService = new PaymentConfirmService(
+                paymentStatusUpdatePort,
+                paymentValidationPort,
+                mockPaymentExecutor
+        );
+
+        PSPConfirmationException exception = PSPConfirmationException.builder()
+                .message(TossPaymentError.REJECT_ACCOUNT_PAYMENT.getDescription())
+                .isSuccess(false)
+                .isFailure(true)
+                .isUnknown(false)
+                .isRetryable(false)
+                .build();
+
+        // When
+        when(mockPaymentExecutor.execute(paymentConfirmCommand))
+                .thenReturn(Mono.error(exception));
+
+        PaymentConfirmationResult paymentConfirmationResult = paymentConfirmService
+                .confirm(paymentConfirmCommand)
+                .block();
+        assertNotNull(paymentConfirmationResult);
+
+        // Then
+        PaymentEvent paymentEvent = paymentDatabaseHelper.getPayment(orderId);
+        assertNotNull(paymentEvent);
+
+        assertThat(paymentConfirmationResult.getStatus()).isEqualTo(PaymentStatus.FAILURE);
+        assertTrue(paymentEvent.isFailure());
+    }
+
+    @Test
+    void should_handle_PaymentValidationException() {
+        String orderId = UUID.randomUUID().toString();
+
+        CheckoutCommand command = new CheckoutCommand(1L, List.of(1L, 2L, 3L), 1L, orderId);
+
+        CheckoutResult checkoutResult = checkoutUseCase.checkout(command).block();
+
+        assertNotNull(checkoutResult);
+        PaymentConfirmCommand paymentConfirmCommand = new PaymentConfirmCommand(
+                UUID.randomUUID().toString(),
+                orderId,
+                checkoutResult.getAmount()
+        );
+
+
+        PaymentConfirmService paymentConfirmService = new PaymentConfirmService(
+                paymentStatusUpdatePort,
+                paymentValidationPort,
+                mockPaymentExecutor
+        );
+
+        PaymentValidationException exception = new PaymentValidationException("결제 유효셩 검사에서 실패했습니다.");
+
+        // When
+        when(mockPaymentExecutor.execute(paymentConfirmCommand))
+                .thenReturn(Mono.error(exception));
+
+        PaymentConfirmationResult paymentConfirmationResult = paymentConfirmService
+                .confirm(paymentConfirmCommand)
+                .block();
+        assertNotNull(paymentConfirmationResult);
+
+        // Then
+        PaymentEvent paymentEvent = paymentDatabaseHelper.getPayment(orderId);
+        assertNotNull(paymentEvent);
+
+        assertThat(paymentConfirmationResult.getStatus()).isEqualTo(PaymentStatus.FAILURE);
+        assertTrue(paymentEvent.isFailure());
     }
 }

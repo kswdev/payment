@@ -1,9 +1,11 @@
 package com.example.backend.adapter.out.web.toss.config;
 
+import io.netty.handler.timeout.ReadTimeoutHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.annotation.DurationFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ClientHttpConnector;
@@ -14,6 +16,7 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
 
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 
 
 @Configuration
@@ -43,6 +46,12 @@ public class TossWebClientConfiguration {
                 .builder("toss-payment")
                 .build();
 
-        return new ReactorClientHttpConnector(HttpClient.create(provider));
+        HttpClient httpClient = HttpClient
+                .create(provider)
+                .doOnConnected(connection ->
+                        connection.addHandlerLast(new ReadTimeoutHandler(30, TimeUnit.SECONDS)));
+
+
+        return new ReactorClientHttpConnector(httpClient);
     }
 }
