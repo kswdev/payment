@@ -4,13 +4,16 @@ import com.example.backend.adapter.out.persistence.repository.PaymentRepository;
 import com.example.backend.adapter.out.persistence.repository.PaymentStatusUpdateRepository;
 import com.example.backend.adapter.out.persistence.repository.PaymentValidationRepository;
 import com.example.backend.application.command.PaymentStatusUpdateCommand;
+import com.example.backend.application.port.out.LoadPendingPaymentPort;
 import com.example.backend.application.port.out.PaymentStatusUpdatePort;
 import com.example.backend.application.port.out.PaymentValidationPort;
 import com.example.backend.application.port.out.SavePaymentPort;
 import com.example.backend.common.PersistenceAdapter;
 import com.example.backend.domain.PaymentEvent;
+import com.example.backend.domain.PendingPaymentEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -19,7 +22,8 @@ import reactor.core.publisher.Mono;
 public class PaymentPersistenceAdapter implements
         SavePaymentPort,
         PaymentStatusUpdatePort,
-        PaymentValidationPort {
+        PaymentValidationPort,
+        LoadPendingPaymentPort {
 
     private final PaymentRepository paymentRepository;
     private final PaymentStatusUpdateRepository paymentStatusUpdateRepository;
@@ -43,5 +47,10 @@ public class PaymentPersistenceAdapter implements
     @Override
     public Mono<Boolean> isValid(String orderId, Long amount) {
         return paymentValidationRepository.isValid(orderId, amount);
+    }
+
+    @Override
+    public Flux<PendingPaymentEvent> getPendingPayments() {
+        return paymentRepository.getPendingPayments();
     }
 }
