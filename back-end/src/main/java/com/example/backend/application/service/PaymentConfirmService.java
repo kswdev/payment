@@ -32,40 +32,64 @@ public class PaymentConfirmService implements PaymentConfirmUseCase {
 
     @Override
     public Mono<PaymentConfirmationResult> confirm(PaymentConfirmCommand command) {
+        return validateAndExecutePayment(command)
+                .flatMap(this::updatePaymentStatusAndMapResult)
+                .onErrorResume(handlePaymentError(command));
+    }
+
+    private Mono<PaymentExecutionResult> validateAndExecutePayment(PaymentConfirmCommand command) {
         return paymentStatusUpdatePort.updatePaymentStatusToExecuting(command.orderId(), command.paymentKey())
                 .filterWhen(__ -> paymentValidationPort.isValid(command.orderId(), command.amount()))
-                .then(paymentExecutorPort.execute(command))
-                .flatMap(paymentExecutionResult ->  paymentStatusUpdatePort.updatePaymentStatus(
-                        PaymentStatusUpdateCommand.from(paymentExecutionResult)
-                    ).thenReturn(paymentExecutionResult)
-                )
-                .flatMap(result ->
-                        Mono.just(new PaymentConfirmationResult(result.paymentStatus(), result.getPaymentFailure())))
-                .onErrorResume(handlePaymentError(command));
+                .then(paymentExecutorPort.execute(command));
+    }
+
+    private Mono<PaymentConfirmationResult> updatePaymentStatusAndMapResult(PaymentExecutionResult executionResult) {
+        return paymentStatusUpdatePort.updatePaymentStatus(PaymentStatusUpdateCommand.from(executionResult))
+                .thenReturn(new PaymentConfirmationResult(
+                        executionResult.paymentStatus(),
+                        executionResult.getPaymentFailure()
+                ));
     }
 
     private Function<Throwable, Mono<? extends PaymentConfirmationResult>> handlePaymentError(PaymentConfirmCommand command) {
         return error -> {
             if (error instanceof PaymentAlreadyProcessedException exception) {
-                return Mono.just(new PaymentConfirmationResult(
-                        exception.getPaymentStatus(),
-                        new PaymentExecutionResult.PaymentFailure(exception.getPaymentStatus().name(), exception.getMessage())
-                ));
+                return handlePaymentAlreadyProcessed(exception);
             }
-
-            Pair<PaymentStatus, PaymentExecutionResult.PaymentFailure> result = getErrorResult(error);
-            PaymentStatusUpdateCommand paymentStatusUpdateCommand = PaymentStatusUpdateCommand.builder()
-                    .paymentKey(command.paymentKey())
-                    .orderId(command.orderId())
-                    .status(result.getFirst())
-                    .paymentFailure(result.getSecond())
-                    .build();
-
-            return paymentStatusUpdatePort.updatePaymentStatus(paymentStatusUpdateCommand)
-                    .thenReturn(new PaymentConfirmationResult(result.getFirst(), result.getSecond()));
-
+            return handleGeneralError(command, error);
         };
     }
+
+    private Mono<PaymentConfirmationResult> handlePaymentAlreadyProcessed(PaymentAlreadyProcessedException exception) {
+        return Mono.just(new PaymentConfirmationResult(
+                exception.getPaymentStatus(),
+                new PaymentExecutionResult.PaymentFailure(
+                        exception.getPaymentStatus().name(),
+                        exception.getMessage()
+                )
+        ));
+    }
+
+    private Mono<PaymentConfirmationResult> handleGeneralError(PaymentConfirmCommand command, Throwable error) {
+        Pair<PaymentStatus, PaymentExecutionResult.PaymentFailure> result = getErrorResult(error);
+        return updatePaymentStatusAndReturnResult(command, result);
+    }
+
+    private Mono<PaymentConfirmationResult> updatePaymentStatusAndReturnResult(
+            PaymentConfirmCommand command,
+            Pair<PaymentStatus, PaymentExecutionResult.PaymentFailure> result
+    ) {
+        PaymentStatusUpdateCommand updateCommand = PaymentStatusUpdateCommand.builder()
+                .paymentKey(command.paymentKey())
+                .orderId(command.orderId())
+                .status(result.getFirst())
+                .paymentFailure(result.getSecond())
+                .build();
+
+        return paymentStatusUpdatePort.updatePaymentStatus(updateCommand)
+                .thenReturn(new PaymentConfirmationResult(result.getFirst(), result.getSecond()));
+    }
+
 
     private Pair<PaymentStatus, PaymentExecutionResult.PaymentFailure> getErrorResult(Throwable error) {
         return switch (error) {
