@@ -35,19 +35,15 @@ import static org.mockito.Mockito.when;
 @Import(PaymentTestConfiguration.class)
 class PaymentRecoveryServiceTest {
 
-    @Mock
-    private PaymentExecutorPort mockPaymentExecutor;
+    @Mock private PaymentExecutorPort mockPaymentExecutor;
 
-    @Autowired
-    private PaymentStatusUpdatePort paymentStatusUpdatePort;
-    @Autowired
-    private LoadPendingPaymentPort loadPendingPaymentPort;
-    @Autowired
-    private PaymentValidationPort paymentValidationPort;
-    @Autowired
-    private CheckoutUseCase checkoutUseCase;
-    @Autowired
-    private PaymentDatabaseHelper paymentDatabaseHelper;
+    @Autowired private PaymentDatabaseHelper paymentDatabaseHelper;
+    @Autowired private LoadPendingPaymentPort loadPendingPaymentPort;
+    @Autowired private PaymentStatusUpdatePort paymentStatusUpdatePort;
+    @Autowired private PaymentValidationPort paymentValidationPort;
+    @Autowired private CheckoutUseCase checkoutUseCase;
+
+    @Autowired private PaymentErrorHandler paymentErrorHandler;
 
     private PaymentRecoveryService paymentRecoveryService;
 
@@ -55,12 +51,12 @@ class PaymentRecoveryServiceTest {
     void setUp() {
         paymentDatabaseHelper.clear();
 
-        // PaymentExecutorPort만 모킹하고 나머지는 실제 구현체 사용
         paymentRecoveryService = new PaymentRecoveryService(
                 loadPendingPaymentPort,
                 paymentStatusUpdatePort,
                 paymentValidationPort,
-                mockPaymentExecutor          // 모킹된 의존성
+                mockPaymentExecutor,
+                paymentErrorHandler
         );
     }
 
@@ -126,7 +122,7 @@ class PaymentRecoveryServiceTest {
                 command.orderId(),
                 PaymentStatus.UNKNOWN,
                 null,
-                new PaymentExecutionResult.PaymentFailure("UNKNOWN", "UNKNOWN")
+                new PaymentFailure("UNKNOWN", "UNKNOWN")
         );
 
         paymentStatusUpdatePort.updatePaymentStatus(updateCommand)

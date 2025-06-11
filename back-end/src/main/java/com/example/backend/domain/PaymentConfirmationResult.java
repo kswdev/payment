@@ -5,10 +5,10 @@ import lombok.Getter;
 @Getter
 public class PaymentConfirmationResult {
     private final PaymentStatus status;
-    private final PaymentExecutionResult.PaymentFailure failure;
+    private final PaymentFailure failure;
     private final String message;
 
-    public PaymentConfirmationResult(PaymentStatus status, PaymentExecutionResult.PaymentFailure failure) {
+    public PaymentConfirmationResult(PaymentStatus status, PaymentFailure failure) {
         this.status = status;
         this.failure = failure;
 

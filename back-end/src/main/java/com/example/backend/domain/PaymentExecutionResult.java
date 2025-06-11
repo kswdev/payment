@@ -83,14 +83,4 @@ public class PaymentExecutionResult {
         }
     }
 
-    @Getter
-    public static class PaymentFailure {
-        private String errorCode;
-        private String message;
-
-        public PaymentFailure(String errorCode, String message) {
-            this.errorCode = errorCode;
-            this.message = message;
-        }
-    }
 }

@@ -1,6 +1,7 @@
 package com.example.backend.application.command;
 
 import com.example.backend.domain.PaymentExecutionResult;
+import com.example.backend.domain.PaymentFailure;
 import com.example.backend.domain.PaymentStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +12,7 @@ public class PaymentStatusUpdateCommand {
     private String orderId;
     private PaymentStatus status;
     private PaymentExecutionResult.PaymentExtraDetails extraDetails;
-    private PaymentExecutionResult.PaymentFailure paymentFailure;
+    private PaymentFailure paymentFailure;
 
 
     public static PaymentStatusUpdateCommand from(PaymentExecutionResult result) {
@@ -25,7 +26,7 @@ public class PaymentStatusUpdateCommand {
     }
 
     @Builder
-    public PaymentStatusUpdateCommand(String paymentKey, String orderId, PaymentStatus status, PaymentExecutionResult.PaymentExtraDetails extraDetails, PaymentExecutionResult.PaymentFailure paymentFailure) {
+    public PaymentStatusUpdateCommand(String paymentKey, String orderId, PaymentStatus status, PaymentExecutionResult.PaymentExtraDetails extraDetails, PaymentFailure paymentFailure) {
         this.paymentKey = paymentKey;
         this.orderId = orderId;
         this.status = status;

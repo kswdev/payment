@@ -8,6 +8,7 @@ import com.example.backend.application.port.out.PaymentExecutorPort;
 import com.example.backend.application.port.out.PaymentStatusUpdatePort;
 import com.example.backend.application.port.out.PaymentValidationPort;
 import com.example.backend.common.UseCase;
+import com.example.backend.domain.PaymentConfirmationResult;
 import com.example.backend.domain.PaymentExecutionResult;
 import com.example.backend.domain.PendingPaymentEvent;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +29,13 @@ import java.util.concurrent.TimeUnit;
 @Profile("dev")
 @RequiredArgsConstructor
 public class PaymentRecoveryService implements PaymentRecoveryUseCase {
+    private final Scheduler scheduler = Schedulers.newSingle("payment-recovery");
 
     private final LoadPendingPaymentPort loadPendingPaymentPort;
     private final PaymentStatusUpdatePort paymentStatusUpdatePort;
     private final PaymentValidationPort paymentValidationPort;
     private final PaymentExecutorPort paymentExecutorPort;
-    private final Scheduler scheduler = Schedulers.newSingle("payment-recovery");
+    private final PaymentErrorHandler errorHandler;
 
     // 시스템에 영향을 끼치지 않기 위해 다른 스레드를 사용해 격리(bulk head)
     @Override
@@ -46,13 +48,16 @@ public class PaymentRecoveryService implements PaymentRecoveryUseCase {
         return loadPendingPaymentsAndMapToConfirmCommand()
                 .parallel()
                 .runOn(Schedulers.parallel())
-                .flatMap(this::validatePaymentAndExecutePayment)
-                .flatMap(this::updatePaymentStatus)
+                .flatMap(command ->
+                    validatePayment(command)
+                            .flatMap(paymentExecutorPort::execute)
+                            .flatMap(this::updatePaymentStatus)
+                            .onErrorResume(errorHandler.handlePaymentConfirmationError(command))
+                )
                 .sequential()
                 .subscribeOn(scheduler)
                 .then();
     }
-
 
     private Flux<PaymentConfirmCommand> loadPendingPaymentsAndMapToConfirmCommand() {
         return loadPendingPaymentPort.getPendingPayments()
@@ -67,19 +72,16 @@ public class PaymentRecoveryService implements PaymentRecoveryUseCase {
         );
     }
 
-    private Mono<PaymentExecutionResult> validatePaymentAndExecutePayment(PaymentConfirmCommand command) {
-        return validatePayment(command)
-                .flatMap(paymentExecutorPort::execute);
-    }
-
     private Mono<PaymentConfirmCommand> validatePayment(PaymentConfirmCommand command) {
         return paymentValidationPort.isValid(command.orderId(), command.amount())
                 .thenReturn(command);
     }
 
-    private Mono<PaymentExecutionResult> updatePaymentStatus(PaymentExecutionResult result) {
-        return paymentStatusUpdatePort.updatePaymentStatus(
-                PaymentStatusUpdateCommand.from(result)
-        ).thenReturn(result);
+    private Mono <PaymentConfirmationResult> updatePaymentStatus(PaymentExecutionResult executionResult) {
+        return paymentStatusUpdatePort.updatePaymentStatus(PaymentStatusUpdateCommand.from(executionResult))
+                .thenReturn(new PaymentConfirmationResult(
+                        executionResult.paymentStatus(),
+                        executionResult.getPaymentFailure()
+                ));
     }
 }
