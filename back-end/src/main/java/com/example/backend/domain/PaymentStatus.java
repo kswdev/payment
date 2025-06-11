@@ -19,7 +19,7 @@ public enum PaymentStatus {
 
     public static PaymentStatus get(String status) {
         return Arrays.stream(PaymentStatus.values())
-                .filter(paymentMethod -> paymentMethod.getDescription().equals(status))
+                .filter(paymentMethod -> paymentMethod.name().equals(status))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         String.format("Payment Method (method: %s) 는 올바르지 않은 결제 방법입니다.", status)

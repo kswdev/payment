@@ -69,9 +69,10 @@ public class R2DBCPaymentDatabaseHelper implements PaymentDatabaseHelper {
     @Override
     public void clear() {
         deletePaymentOrderHistories()
-                .then(deletePaymentEvents())
                 .then(deletePaymentOrders())
-                .as(transactionalOperator::transactional);
+                .then(deletePaymentEvents())
+                .as(transactionalOperator::transactional)
+                .block();
 
     }
     private Mono<Long> deletePaymentOrderHistories() {

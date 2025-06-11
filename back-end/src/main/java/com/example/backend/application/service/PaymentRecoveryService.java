@@ -12,12 +12,11 @@ import com.example.backend.domain.PaymentExecutionResult;
 import com.example.backend.domain.PendingPaymentEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Signal;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
@@ -26,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @UseCase
+@Profile("dev")
 @RequiredArgsConstructor
 public class PaymentRecoveryService implements PaymentRecoveryUseCase {
 
@@ -38,18 +38,21 @@ public class PaymentRecoveryService implements PaymentRecoveryUseCase {
     // 시스템에 영향을 끼치지 않기 위해 다른 스레드를 사용해 격리(bulk head)
     @Override
     @Scheduled(fixedDelay = 100, timeUnit = TimeUnit.SECONDS)
-    public void recovery() {
+    public void executeRecovery() {
+        recoverPayments().subscribe();  // 실제 구독 실행
+    }
 
-        loadPendingPaymentsAndMapToConfirmCommand()
+    public Mono<Void> recoverPayments() {
+        return loadPendingPaymentsAndMapToConfirmCommand()
                 .parallel()
                 .runOn(Schedulers.parallel())
                 .flatMap(this::validatePaymentAndExecutePayment)
                 .flatMap(this::updatePaymentStatus)
                 .sequential()
-                .doOnEach(this::logPaymentResult)
                 .subscribeOn(scheduler)
-                .subscribe();
+                .then();
     }
+
 
     private Flux<PaymentConfirmCommand> loadPendingPaymentsAndMapToConfirmCommand() {
         return loadPendingPaymentPort.getPendingPayments()
@@ -78,16 +81,5 @@ public class PaymentRecoveryService implements PaymentRecoveryUseCase {
         return paymentStatusUpdatePort.updatePaymentStatus(
                 PaymentStatusUpdateCommand.from(result)
         ).thenReturn(result);
-    }
-
-    private void logPaymentResult(Signal<PaymentExecutionResult> signal) {
-        if (signal.get() != null) {
-            String orderId = signal.get().getOrderId();
-            if (signal.isOnNext() && signal.isOnComplete()) {
-                log.info("successfully recovered payment: {}", orderId);
-            } else {
-                log.error("failed to recover payment: {}", orderId);
-            }
-        }
     }
 }

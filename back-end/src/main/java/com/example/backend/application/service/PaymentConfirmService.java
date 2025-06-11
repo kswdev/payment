@@ -39,8 +39,15 @@ public class PaymentConfirmService implements PaymentConfirmUseCase {
 
     private Mono<PaymentExecutionResult> validateAndExecutePayment(PaymentConfirmCommand command) {
         return paymentStatusUpdatePort.updatePaymentStatusToExecuting(command.orderId(), command.paymentKey())
-                .filterWhen(__ -> paymentValidationPort.isValid(command.orderId(), command.amount()))
-                .then(paymentExecutorPort.execute(command));
+                .flatMap(__ -> paymentValidationPort.isValid(command.orderId(), command.amount())
+                        .flatMap(isValid -> {
+                            if (isValid) {
+                                return paymentExecutorPort.execute(command);
+                            } else {
+                                return Mono.error(new PaymentValidationException("Payment validation failed"));
+                            }
+                        }));
+
     }
 
     private Mono<PaymentConfirmationResult> updatePaymentStatusAndMapResult(PaymentExecutionResult executionResult) {

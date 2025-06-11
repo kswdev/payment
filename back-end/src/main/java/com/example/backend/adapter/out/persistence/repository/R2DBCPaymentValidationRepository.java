@@ -5,7 +5,6 @@ import com.example.backend.common.PersistenceAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -16,8 +15,6 @@ import java.math.BigDecimal;
 public class R2DBCPaymentValidationRepository implements PaymentValidationRepository {
 
     private final DatabaseClient databaseClient;
-    private final TransactionalOperator transactionalOperator;
-
 
     @Override
     public Mono<Boolean> isValid(String orderId, Long amount) {

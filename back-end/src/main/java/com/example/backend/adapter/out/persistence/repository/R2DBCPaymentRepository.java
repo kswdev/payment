@@ -42,10 +42,10 @@ public class R2DBCPaymentRepository implements PaymentRepository {
                                                 .map(resultMap ->
                                                         PendingPaymentOrder.builder()
                                                                 .paymentOrderId((Long) resultMap.get("payment_order_id"))
-                                                                .paymentStatus(PaymentStatus.get((String) resultMap.get("payment_status")))
+                                                                .paymentStatus(PaymentStatus.get((String) resultMap.get("order_status")))
                                                                 .amount(((BigDecimal) resultMap.get("amount")).longValue())
-                                                                .failedCount((Integer) resultMap.get("failed_count"))
-                                                                .threshold((Integer) resultMap.get("threshold"))
+                                                                .failedCount((Byte) resultMap.get("failed_count"))
+                                                                .threshold((Byte) resultMap.get("threshold"))
                                                                 .build())
                                                 .toList()
                                 )
@@ -95,14 +95,14 @@ public class R2DBCPaymentRepository implements PaymentRepository {
                 SELECT pe.id as payment_event_id,
                        pe.order_id,
                        pe.payment_key,
-                       po.payment_order_id,
-                       po.payment_status,
+                       po.order_id,
+                       po.order_status,
                        po.amount,
                        po.failed_count,
-                       po.threshold,
+                       po.threshold
                   FROM payment_event pe
                   INNER JOIN payment_order po ON pe.id = po.payment_event_id
-                  WHERE po.payment_status = 'UNKNOWN' OR (po.payment_status = 'EXECUTING' AND po.updated_at <= :updatedAt - INTERVAL 3 MINUTE )
+                  WHERE po.order_status = 'UNKNOWN' OR (po.order_status = 'EXECUTING' AND po.updated_at <= :updatedAt - INTERVAL 3 MINUTE )
                     AND po.failed_count < po.threshold
                   LIMIT 10
             """.trim();
