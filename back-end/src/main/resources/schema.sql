@@ -39,4 +39,16 @@ CREATE TABLE payment_order_histories(
     changed_by VARCHAR(255),
     reason VARCHAR(255),
     FOREIGN KEY (payment_order_id) REFERENCES payment_order(id)
-)
+);
+
+CREATE TABLE outboxes(
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    idempotency_key VARCHAR(255) UNIQUE NOT NULL,
+    status ENUM('INIT', 'SUCCESS', 'FAILURE') DEFAULT 'INIT',
+    type VARCHAR(40) NOT NULL,
+    partition_key INT NOT NULL DEFAULT 0,
+    payload JSON,
+    metadata JSON,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

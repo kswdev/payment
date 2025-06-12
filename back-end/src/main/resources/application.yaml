@@ -1,4 +1,6 @@
-# secretKey : test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+server:
+  port: 8000
+
 spring:
   r2dbc:
     url: r2dbc:mysql://localhost:3306/test
@@ -8,15 +10,30 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9093  # ✅ Docker 외부 접속은 localhost:9093
+          autoCreateTopics: true
+        bindings:
+          consume-in-0:
+            destination: payment
+            group: payment-service
+
 logging:
   level:
-    org.springframework:
-      web: DEBUG
-      r2dbc: DEBUG
-      transaction: DEBUG
-
+    org.springframework.web: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.springframework.transaction: DEBUG
 
 PSP:
   toss:
     url: https://api.tosspayments.com
     secretKey: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+
+management:
+  endpoint:
+    web:
+      exposure:
+        include: bindings
