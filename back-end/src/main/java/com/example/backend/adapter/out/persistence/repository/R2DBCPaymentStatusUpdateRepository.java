@@ -2,6 +2,7 @@ package com.example.backend.adapter.out.persistence.repository;
 
 import com.example.backend.adapter.out.persistence.exception.PaymentAlreadyProcessedException;
 import com.example.backend.application.command.PaymentStatusUpdateCommand;
+import com.example.backend.domain.PaymentEventMessagePublisher;
 import com.example.backend.domain.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.util.Pair;
@@ -20,6 +21,8 @@ public class R2DBCPaymentStatusUpdateRepository implements PaymentStatusUpdateRe
 
     private final DatabaseClient databaseClient;
     private final TransactionalOperator transactionalOperator;
+    private final R2DBCPaymentOutboxRepository paymentOutboxRepository;
+    private final PaymentEventMessagePublisher paymentEventPublisher;
 
 
     @Override
@@ -79,6 +82,8 @@ public class R2DBCPaymentStatusUpdateRepository implements PaymentStatusUpdateRe
                 .flatMap(paymentOrderIdToStatus -> insertPaymentHistory(paymentOrderIdToStatus, command.getStatus(), "PAYMENT_CONFIRMATION_DONE"))
                 .then(updatePaymentOrderStatus(command.getOrderId(), command.getStatus()))
                 .then(updatePaymentEventExtraDetails(command))
+                .then(paymentOutboxRepository.insertOutbox(command))
+                .flatMap(paymentEventPublisher::publicEvent)
                 .as(transactionalOperator::transactional)
                 .thenReturn(true);
 

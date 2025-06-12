@@ -15,11 +15,16 @@ spring:
       kafka:
         binder:
           brokers: localhost:9093  # ✅ Docker 외부 접속은 localhost:9093
-          autoCreateTopics: true
+          autoCreateTopics: false
         bindings:
-          consume-in-0:
-            destination: payment
-            group: payment-service
+          send-out-0:
+            producer:
+              record-metadata-channel: payment-result
+
+      bindings:
+        send-out-0:
+          destination: payment
+          group: payment-service
 
 logging:
   level:
