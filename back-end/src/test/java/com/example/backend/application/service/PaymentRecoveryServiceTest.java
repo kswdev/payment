@@ -1,5 +1,6 @@
 package com.example.backend.application.service;
 
+import com.example.backend.adapter.out.web.toss.exception.PSPConfirmationException;
 import com.example.backend.application.command.CheckoutCommand;
 import com.example.backend.application.command.PaymentConfirmCommand;
 import com.example.backend.application.command.PaymentStatusUpdateCommand;
@@ -60,6 +61,26 @@ class PaymentRecoveryServiceTest {
         );
     }
 
+    @Test
+    void should_fail_recovery_when_an_unknown_error_occur() {
+        //given
+        PaymentConfirmCommand paymentCommand = createPaymentCommandWithUnknownStatus();
+        PSPConfirmationException exception = PSPConfirmationException.builder()
+                .errorCode("UNKNOWN")
+                .message("UNKNOWN")
+                .isSuccess(false)
+                .isFailure(false)
+                .isUnknown(true)
+                .build();
+        //when
+        stubPaymentExecutorThrowException(paymentCommand, exception);
+
+        //then
+        paymentRecoveryService.recoverPayments()
+                .as(StepVerifier::create)
+                .expectComplete()
+                .verify(Duration.ofSeconds(1));
+    }
 
     @Test
     void should_recovery_payments() {
@@ -140,6 +161,17 @@ class PaymentRecoveryServiceTest {
                 .build();
     }
 
+    private PaymentExecutionResult createUnknownPaymentResult(PaymentConfirmCommand command) {
+        return PaymentExecutionResult.builder()
+                .paymentKey(command.paymentKey())
+                .orderId(command.orderId())
+                .extraDetails(createPaymentExtraDetails(command))
+                .isSuccess(false)
+                .isFailure(false)
+                .isUnknown(true)
+                .build();
+    }
+
     private PaymentExecutionResult.PaymentExtraDetails createPaymentExtraDetails(PaymentConfirmCommand command) {
         return new PaymentExecutionResult.PaymentExtraDetails(
                 PaymentType.NORMAL,
@@ -155,6 +187,11 @@ class PaymentRecoveryServiceTest {
     private void stubPaymentExecutorResponse(PaymentConfirmCommand command, PaymentExecutionResult result) {
         when(mockPaymentExecutor.execute(command))
                 .thenReturn(Mono.just(result));
+    }
+
+    private void stubPaymentExecutorThrowException(PaymentConfirmCommand command, RuntimeException exception) {
+        when(mockPaymentExecutor.execute(command))
+                .thenReturn(Mono.error(exception));
     }
 
 }
