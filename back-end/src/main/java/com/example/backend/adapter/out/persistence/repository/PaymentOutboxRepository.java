@@ -2,6 +2,7 @@ package com.example.backend.adapter.out.persistence.repository;
 
 import com.example.backend.application.command.PaymentStatusUpdateCommand;
 import com.example.backend.domain.PaymentEventMessage;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.example.backend.domain.PaymentEventMessage.*;
@@ -12,4 +13,5 @@ public interface PaymentOutboxRepository {
 
     Mono<Boolean> markMessageAsSent(String idempotencyKey, Type paymentEventMessageType);
     Mono<Boolean> markMessageAsFailure(String idempotencyKey, Type paymentEventMessageType);
+    Flux<PaymentEventMessage> getPendingPaymentOutboxes();
 }

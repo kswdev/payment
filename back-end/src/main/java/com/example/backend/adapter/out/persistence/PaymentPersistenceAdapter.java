@@ -1,15 +1,14 @@
 package com.example.backend.adapter.out.persistence;
 
+import com.example.backend.adapter.out.persistence.repository.PaymentOutboxRepository;
 import com.example.backend.adapter.out.persistence.repository.PaymentRepository;
 import com.example.backend.adapter.out.persistence.repository.PaymentStatusUpdateRepository;
 import com.example.backend.adapter.out.persistence.repository.PaymentValidationRepository;
 import com.example.backend.application.command.PaymentStatusUpdateCommand;
-import com.example.backend.application.port.out.LoadPendingPaymentPort;
-import com.example.backend.application.port.out.PaymentStatusUpdatePort;
-import com.example.backend.application.port.out.PaymentValidationPort;
-import com.example.backend.application.port.out.SavePaymentPort;
+import com.example.backend.application.port.out.*;
 import com.example.backend.common.PersistenceAdapter;
 import com.example.backend.domain.PaymentEvent;
+import com.example.backend.domain.PaymentEventMessage;
 import com.example.backend.domain.PendingPaymentEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,9 +22,11 @@ public class PaymentPersistenceAdapter implements
         SavePaymentPort,
         PaymentStatusUpdatePort,
         PaymentValidationPort,
-        LoadPendingPaymentPort {
+        LoadPendingPaymentPort,
+        LoadPendingPaymentEventMessagePort {
 
     private final PaymentRepository paymentRepository;
+    private final PaymentOutboxRepository paymentOutboxRepository;
     private final PaymentStatusUpdateRepository paymentStatusUpdateRepository;
     private final PaymentValidationRepository paymentValidationRepository;
 
@@ -52,5 +53,10 @@ public class PaymentPersistenceAdapter implements
     @Override
     public Flux<PendingPaymentEvent> getPendingPayments() {
         return paymentRepository.getPendingPayments();
+    }
+
+    @Override
+    public Flux<PaymentEventMessage> getPendingPaymentEventMessage() {
+        return paymentOutboxRepository.getPendingPaymentOutboxes();
     }
 }

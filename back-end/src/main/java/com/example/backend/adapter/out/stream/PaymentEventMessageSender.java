@@ -1,6 +1,7 @@
 package com.example.backend.adapter.out.stream;
 
 import com.example.backend.adapter.out.persistence.repository.PaymentOutboxRepository;
+import com.example.backend.application.port.out.DispatchEventMessagePort;
 import com.example.backend.common.StreamAdapter;
 import com.example.backend.domain.PaymentEventMessage;
 import jakarta.annotation.PostConstruct;
@@ -31,7 +32,7 @@ import static org.springframework.integration.IntegrationMessageHeaderAccessor.C
 @Configuration
 @StreamAdapter
 @RequiredArgsConstructor
-public class PaymentEventMessageSender {
+public class PaymentEventMessageSender implements DispatchEventMessagePort {
 
     private final Many<Message<PaymentEventMessage>> sender = Sinks.many().unicast().onBackpressureBuffer();
     private final Many<SenderResult<String>> sendResult = Sinks.many().unicast().onBackpressureBuffer();

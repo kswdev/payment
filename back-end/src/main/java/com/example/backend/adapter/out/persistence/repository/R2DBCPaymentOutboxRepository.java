@@ -7,14 +7,18 @@ import com.example.backend.domain.PaymentEventMessage.Type;
 import com.example.backend.domain.PaymentStatus;
 import com.example.backend.adapter.out.stream.util.Mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static com.example.backend.domain.PaymentEventMessage.Type.*;
+import static com.example.backend.util.CustomDateTimeFormatter.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -40,6 +44,19 @@ public class R2DBCPaymentOutboxRepository implements PaymentOutboxRepository {
                 .fetch()
                 .rowsUpdated()
                 .thenReturn(true);
+    }
+
+    @Override
+    public Flux<PaymentEventMessage> getPendingPaymentOutboxes() {
+        return databaseClient.sql(SELECT_PENDING_PAYMENT_OUTBOX)
+                .bind("createdAt", LocalDateTime.now().format(MYSQL_DATE_TIME_FORMATTER))
+                .fetch()
+                .all()
+                .map(resultMap -> new PaymentEventMessage(
+                        PAYMENT_CONFIRMATION_SUCCESS,
+                        Mapper.readAsMap((String) resultMap.get("payload")),
+                        Mapper.readAsMap((String) resultMap.get("metadata"))
+                ));
     }
 
     @Override
@@ -74,6 +91,14 @@ public class R2DBCPaymentOutboxRepository implements PaymentOutboxRepository {
                 Map.of("partitionKey", PartitionKeyUtil.createPartitionKey(command.getOrderId().hashCode()))
         );
     }
+
+    private static final String SELECT_PENDING_PAYMENT_OUTBOX = """
+        SELECT *
+        FROM outboxes
+        WHERE status = 'INIT' or status = 'FAILURE'
+        AND created_at < :createdAt - INTERVAL 1 MINUTE
+        AND type = 'PAYMENT_CONFIRMATION_SUCCESS'
+    """.trim();
 
     private static final String UPDATE_OUTBOX_MESSAGE_SENT = """
         UPDATE outboxes
