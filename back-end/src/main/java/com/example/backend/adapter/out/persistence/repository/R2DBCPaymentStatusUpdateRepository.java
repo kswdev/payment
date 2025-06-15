@@ -83,7 +83,7 @@ public class R2DBCPaymentStatusUpdateRepository implements PaymentStatusUpdateRe
                 .then(updatePaymentOrderStatus(command.getOrderId(), command.getStatus()))
                 .then(updatePaymentEventExtraDetails(command))
                 .then(paymentOutboxRepository.insertOutbox(command))
-                .flatMap(paymentEventPublisher::publicEvent)
+                .flatMap(paymentEventPublisher::publishEvent)
                 .as(transactionalOperator::transactional)
                 .thenReturn(true);
 

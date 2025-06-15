@@ -12,10 +12,7 @@ import com.example.backend.application.port.out.PaymentValidationPort;
 import com.example.backend.application.test.PaymentDatabaseHelper;
 import com.example.backend.application.test.PaymentTestConfiguration;
 import com.example.backend.domain.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -207,6 +204,34 @@ class PaymentConfirmServiceTest {
 
             // then
             verifyPaymentResult(result, PaymentStatus.FAILURE, false, true, false);
+        }
+    }
+
+    @Test
+    @Tag("ExternalIntegration")
+    @DisplayName("결제 승인 완료 후 정상적으로 메세지를 보내는지 확인")
+    void testPaymentConfirmationAfterSendMessage() {
+        // given
+        PaymentExecutionResult successResult = createExecutionResult(
+                true,   // isSuccess
+                false,  // isFailure
+                false,  // isUnknown
+                null    // no failure
+        );
+
+        // when
+        when(mockPaymentExecutor.execute(paymentConfirmCommand))
+                .thenReturn(Mono.just(successResult));
+
+        PaymentConfirmationResult result = paymentConfirmService
+                .confirm(paymentConfirmCommand)
+                .block();
+
+        // 메시지 전송이 완료될 때까지 충분한 시간 대기
+        try {
+            Thread.sleep(2000); // 또는 더 정교한 대기 로직
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 

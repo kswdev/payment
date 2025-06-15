@@ -1,5 +1,5 @@
 server:
-  port: 8000
+  port: 8080
 
 spring:
   r2dbc:
@@ -14,8 +14,8 @@ spring:
     stream:
       kafka:
         binder:
-          brokers: localhost:9093  # ✅ Docker 외부 접속은 localhost:9093
-          autoCreateTopics: false
+          brokers: localhost:9093
+          autoCreateTopics: true
         bindings:
           send-out-0:
             producer:

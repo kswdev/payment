@@ -16,6 +16,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.Many;
 import reactor.core.scheduler.Schedulers;
@@ -38,8 +39,8 @@ public class PaymentEventMessageSender {
     private final PaymentOutboxRepository paymentOutboxRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void dispatchAfterCommit(PaymentEventMessage message) {
-        dispatch(message);
+    public Mono<Void> dispatchAfterCommit(PaymentEventMessage message) {
+        return dispatch(message);
     }
 
     @Bean
@@ -56,7 +57,7 @@ public class PaymentEventMessageSender {
     }
 
     @ServiceActivator(inputChannel = "payment-result")
-    public void handlePaymentResult(SenderResult<String> results) {
+    public void receiveSendResult(SenderResult<String> results) {
         if (results.exception() != null) {
             log.error("Error occurred while sending message to stream", results.exception());
         }
@@ -80,9 +81,10 @@ public class PaymentEventMessageSender {
                 .subscribe();
     }
 
-    private void dispatch(PaymentEventMessage message) {
+    protected Mono<Void> dispatch(PaymentEventMessage message) {
         Message<PaymentEventMessage> eventMessage = createEventMessage(message);
         sender.emitNext(eventMessage, Sinks.EmitFailureHandler.FAIL_FAST);
+        return Mono.empty();
     }
 
     private static Message<PaymentEventMessage> createEventMessage(PaymentEventMessage message) {

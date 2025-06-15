@@ -90,7 +90,7 @@ public class R2DBCPaymentOutboxRepository implements PaymentOutboxRepository {
     """.trim();
 
     private static final String INSERT_OUTBOX = """
-        INSERT_INTO outboxes (idempotency_key, partition_key, type, payload, metadata)
+        INSERT INTO outboxes (idempotency_key, partition_key, type, payload, metadata)
         VALUES (:idempotencyKey, :partitionKey, :type, :payload, :metadata)
     """.trim();
 }

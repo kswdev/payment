@@ -32,6 +32,7 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     testAnnotationProcessor 'org.projectlombok:lombok'
@@ -51,6 +52,6 @@ tasks.named('test') {
 
 test {
     useJUnitPlatform {
-        excludeTags 'TooLongTime'
+        //excludeTags 'TooLongTime', 'ExternalIntegration'
     }
 }
