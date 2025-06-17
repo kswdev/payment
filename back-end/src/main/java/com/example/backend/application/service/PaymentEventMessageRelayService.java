@@ -6,6 +6,7 @@ import com.example.backend.application.port.out.LoadPendingPaymentEventMessagePo
 import com.example.backend.common.UseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.scheduler.Scheduler;
@@ -16,6 +17,7 @@ import static java.util.concurrent.TimeUnit.*;
 @Slf4j
 @UseCase
 @Service
+@Profile("dev")
 @RequiredArgsConstructor
 public class PaymentEventMessageRelayService implements PaymentEventMessageRelayUseCase {
 
@@ -24,10 +26,10 @@ public class PaymentEventMessageRelayService implements PaymentEventMessageRelay
     private final Scheduler scheduler = Schedulers.newSingle("message-relay");
 
     @Override
-    @Scheduled(fixedDelay = 1, initialDelay = 1, timeUnit = SECONDS)
+    @Scheduled(fixedDelay = 180, initialDelay = 180, timeUnit = SECONDS)
     public void relay() {
         loadPendingPaymentEventMessagePort.getPendingPaymentEventMessage()
-                .map(dispatchEventMessagePort::dispatch)
+                .map(dispatchEventMessagePort::dispatchAfterCommit)
                 .onErrorContinue((err, __) -> log.error("Error occurred while dispatching message-relay", err))
                 .subscribeOn(scheduler)
                 .subscribe();

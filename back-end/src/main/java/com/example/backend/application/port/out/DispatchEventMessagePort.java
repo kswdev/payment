@@ -5,4 +5,5 @@ import reactor.core.publisher.Mono;
 
 public interface DispatchEventMessagePort  {
     Mono<Void> dispatch(PaymentEventMessage paymentEventMessage);
+    Mono<Void> dispatchAfterCommit(PaymentEventMessage paymentEventMessage);
 }

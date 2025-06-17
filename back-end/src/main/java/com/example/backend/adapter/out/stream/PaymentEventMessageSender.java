@@ -82,7 +82,7 @@ public class PaymentEventMessageSender implements DispatchEventMessagePort {
                 .subscribe();
     }
 
-    protected Mono<Void> dispatch(PaymentEventMessage message) {
+    public Mono<Void> dispatch(PaymentEventMessage message) {
         Message<PaymentEventMessage> eventMessage = createEventMessage(message);
         sender.emitNext(eventMessage, Sinks.EmitFailureHandler.FAIL_FAST);
         return Mono.empty();
