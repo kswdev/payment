@@ -26,10 +26,10 @@ spring:
       kafka:
         binder:
           brokers: localhost:9093
-          autoCreateTopics: true
+          autoCreateTopics: false
 
       bindings:
-        consume-1-0:
+        consume-in-0:
           destination: payment
           group: wallet-service
 
