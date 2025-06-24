@@ -22,7 +22,6 @@ public class WalletPersistenceAdapter implements
         LoadWallet,
         SaveWallet
 {
-
     private final WalletTransactionRepository walletTransactionRepository;
     private final WalletRepository walletRepository;
 

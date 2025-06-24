@@ -5,7 +5,6 @@ import com.example.walletservice.common.IdempotencyCreator;
 import com.example.walletservice.domain.PaymentEventMessage;
 import com.example.walletservice.domain.WalletTransaction;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -27,10 +26,6 @@ public class JpaWalletTransactionRepository implements WalletTransactionReposito
         springDataJpaWalletTransactionRepository.saveAll(
                 walletTransactions.stream().map(this::mapToJpaWalletTransactionEntity).toList()
         );
-    }
-
-    public interface SpringDataJpaWalletTransactionRepository extends JpaRepository<JpaWalletTransactionEntity, Long> {
-        Boolean existsByOrderId(String orderId);
     }
 
     private JpaWalletTransactionEntity mapToJpaWalletTransactionEntity(WalletTransaction walletTransaction) {

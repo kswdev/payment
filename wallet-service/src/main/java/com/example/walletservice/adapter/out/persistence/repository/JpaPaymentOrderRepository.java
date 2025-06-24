@@ -3,7 +3,6 @@ package com.example.walletservice.adapter.out.persistence.repository;
 import com.example.walletservice.adapter.out.persistence.entity.JpaPaymentOrderEntity;
 import com.example.walletservice.domain.PaymentOrder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,10 +18,6 @@ public class JpaPaymentOrderRepository implements PaymentOrderRepository {
         return springDataJpaPaymentOrderRepository.findByOrderId(orderId).stream()
                 .map(JpaPaymentOrderRepository::mapToPaymentOrder)
                 .toList();
-    }
-
-    public interface SpringDataJpaPaymentOrderRepository extends JpaRepository<JpaPaymentOrderEntity, Long> {
-        List<JpaPaymentOrderEntity> findByOrderId(String orderId);
     }
 
     private static PaymentOrder mapToPaymentOrder(JpaPaymentOrderEntity entity) {

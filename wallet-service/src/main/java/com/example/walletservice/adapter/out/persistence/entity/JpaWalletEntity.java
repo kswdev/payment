@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor @NoArgsConstructor
 public class JpaWalletEntity {
 
-    @Id
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "user_id")
@@ -24,4 +24,9 @@ public class JpaWalletEntity {
     @Version
     private int version;
 
+    public JpaWalletEntity(Long userId, BigDecimal balance, int version) {
+        this.userId = userId;
+        this.balance = balance;
+        this.version = version;
+    }
 }

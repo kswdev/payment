@@ -1,6 +1,5 @@
 package com.example.walletservice.application.service;
 
-import com.example.walletservice.adapter.out.persistence.PaymentOrderPersistenceAdapter;
 import com.example.walletservice.application.port.in.SettlementUseCase;
 import com.example.walletservice.application.port.out.DuplicateMessageFilter;
 import com.example.walletservice.application.port.out.LoadPaymentOrder;

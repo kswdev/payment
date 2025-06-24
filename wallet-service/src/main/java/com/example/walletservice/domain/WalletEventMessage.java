@@ -6,9 +6,9 @@ import java.util.Map;
 
 public class WalletEventMessage {
 
-    private Type type;
-    private Map<String, ?> payload;
-    private Map<String, ?> metadata;
+    @Getter Type type;
+    @Getter private Map<String, ?> payload;
+    @Getter private Map<String, ?> metadata;
 
     public WalletEventMessage(Type type, Map<String, ?> payload) {
         this.type = type;

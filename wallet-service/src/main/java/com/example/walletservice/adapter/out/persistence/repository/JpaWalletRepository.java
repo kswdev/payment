@@ -3,7 +3,6 @@ package com.example.walletservice.adapter.out.persistence.repository;
 import com.example.walletservice.adapter.out.persistence.entity.JpaWalletEntity;
 import com.example.walletservice.domain.Wallet;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +20,7 @@ public class JpaWalletRepository implements WalletRepository {
 
     @Override
     public Set<Wallet> getWallets(Set<Long> sellerIds) {
-        return springDataJpaWalletRepository.findBySellerIdIn(sellerIds).stream()
+        return springDataJpaWalletRepository.findByUserIdIn(sellerIds).stream()
                 .map(JpaWalletRepository::mapToWallet)
                 .collect(Collectors.toSet());
     }
@@ -41,10 +40,6 @@ public class JpaWalletRepository implements WalletRepository {
                         .flatMap(Collection::stream)
                         .toList()
         );
-    }
-
-    public interface SpringDataJpaWalletRepository extends JpaRepository<JpaWalletEntity, Long> {
-        Set<JpaWalletEntity> findBySellerIdIn(Set<Long> sellerIds);
     }
 
     private static Wallet mapToWallet(JpaWalletEntity entity) {
