@@ -29,4 +29,8 @@ public class JpaWalletEntity {
         this.balance = balance;
         this.version = version;
     }
+
+    public JpaWalletEntity addBalance(BigDecimal amount) {
+        return new JpaWalletEntity(this.getUserId(), this.getBalance().add(amount), this.getVersion());
+    }
 }

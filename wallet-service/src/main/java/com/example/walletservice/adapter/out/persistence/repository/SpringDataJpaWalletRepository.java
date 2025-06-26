@@ -9,4 +9,6 @@ import java.util.Set;
 @Repository
 public interface SpringDataJpaWalletRepository extends JpaRepository<JpaWalletEntity, Long> {
     Set<JpaWalletEntity> findByUserIdIn(Set<Long> sellerIds);
+
+    Set<JpaWalletEntity> findByIdIn(Set<Long> id);
 }
