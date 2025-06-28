@@ -8,11 +8,13 @@ import org.springframework.data.util.Pair;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,17 +60,18 @@ public class JpaWalletRepository implements WalletRepository {
         });
     }
 
-    private void retrySaveOperation(List<Wallet> wallets, int maxRetryCount, long sleepTime) {
+    private void retrySaveOperation(List<Wallet> wallets, int maxRetryCount, int sleepTime) {
         int retryCount = 0;
 
         while (true) {
             try {
-                performSaveOperation(wallets);
+                performSaveOperationWithRecent(wallets);
                 break;
             } catch (ObjectOptimisticLockingFailureException e) {
                 if (++retryCount > maxRetryCount) {
                     throw new ExhaustedRetryException("Retry count exceeded for wallet save operation");
                 }
+                waitForNextRetry(sleepTime);
             }
         }
     }
@@ -81,10 +84,11 @@ public class JpaWalletRepository implements WalletRepository {
         );
 
         Map<Long, JpaWalletEntity> recentWalletById = recentWallets.stream()
-                .collect(Collectors.toMap(
-                        JpaWalletEntity::getId,
-                        Function.identity()
-                ));
+                .collect(
+                        Collectors.toMap(
+                            JpaWalletEntity::getId,
+                            Function.identity())
+                );
 
 
         List<Pair<Wallet, JpaWalletEntity>> walletPairs = wallets.stream()
