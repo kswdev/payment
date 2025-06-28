@@ -2,6 +2,7 @@ package com.example.walletservice.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 @Table(name = "wallets")
 @Getter
 @AllArgsConstructor @NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class JpaWalletEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +33,6 @@ public class JpaWalletEntity {
     }
 
     public JpaWalletEntity addBalance(BigDecimal amount) {
-        return new JpaWalletEntity(this.getUserId(), this.getBalance().add(amount), this.getVersion());
+        return new JpaWalletEntity(this.getId(), this.getUserId(), this.getBalance().add(amount), this.getVersion());
     }
 }
