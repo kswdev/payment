@@ -27,7 +27,7 @@ class PaymentEventMessageSenderTest {
     }
 
     @Test
-    @Tag("ExternalIntegration")
+    //@Tag("ExternalIntegration")
     void should_send_message_event_by_using_partitionKey() throws InterruptedException {
         List<PaymentEventMessage> paymentEventMessages = List.of(
                 new PaymentEventMessage(
@@ -56,7 +56,7 @@ class PaymentEventMessageSenderTest {
 
         // 메시지 전송이 완료될 때까지 충분한 시간 대기
         try {
-            Thread.sleep(2000); // 또는 더 정교한 대기 로직
+            Thread.sleep(3000); // 또는 더 정교한 대기 로직
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PaymentEventMessageRelayServiceTest {
 
     private final PaymentOutboxRepository paymentOutboxRepository;
+    private final PaymentEventMessageRelayUseCase paymentEventMessageRelayUseCase;
 
     public PaymentEventMessageRelayServiceTest(
             @Autowired PaymentOutboxRepository paymentOutboxRepository,
@@ -27,8 +28,6 @@ class PaymentEventMessageRelayServiceTest {
         this.paymentOutboxRepository = paymentOutboxRepository;
         this.paymentEventMessageRelayUseCase = paymentEventMessageRelayUseCase;
     }
-
-    private final PaymentEventMessageRelayUseCase paymentEventMessageRelayUseCase;
 
 
     @Test
