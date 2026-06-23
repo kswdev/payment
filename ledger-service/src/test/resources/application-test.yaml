@@ -19,6 +19,7 @@ spring:
     stream:
       bindings:
         consume-in-0:
+          destination: payment
           group: ledger-service
           consumer:
             max-attempts: 3

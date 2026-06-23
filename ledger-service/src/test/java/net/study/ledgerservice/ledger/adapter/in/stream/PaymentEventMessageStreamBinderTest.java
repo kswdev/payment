@@ -38,7 +38,7 @@ public class PaymentEventMessageStreamBinderTest {
         Message<PaymentEventMessage> message = MessageBuilder.withPayload(payload).build();
 
         //when
-        inputDestination.send(message);
+        inputDestination.send(message, "payment");
 
         //then
         verify(doubleLedger).recordDoubleLedgerEntry(payload);
