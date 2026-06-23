@@ -1,6 +1,7 @@
 package net.study.ledgerservice.ledger.adapter.in.stream;
 
 import net.study.ledgerservice.ledger.application.port.in.DoubleLedgerEntryRecordUseCase;
+import net.study.ledgerservice.ledger.domain.LedgerEventMessage;
 import net.study.ledgerservice.ledger.domain.PaymentEventMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 
@@ -15,6 +17,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentEventMessageHandlerTest {
@@ -24,9 +28,12 @@ class PaymentEventMessageHandlerTest {
     @Mock
     DoubleLedgerEntryRecordUseCase doubleLedger;
 
+    @Mock
+    StreamBridge streamBridge;
+
     @BeforeEach
     void setUp() {
-        handler = new PaymentEventMessageHandler(doubleLedger);
+        handler = new PaymentEventMessageHandler(doubleLedger, streamBridge);
     }
 
     @Test
@@ -38,12 +45,26 @@ class PaymentEventMessageHandlerTest {
                 Map.of("orderId", "order-001"),
                 Map.of("partitionKey", 2)
         );
-        Message<PaymentEventMessage> message = MessageBuilder.withPayload(payload).build();
+        LedgerEventMessage expectedMessage = new LedgerEventMessage(
+                LedgerEventMessage.Type.SUCCESS,
+                Map.of("orderId", "order-001"),
+                Map.of("partitionKey", 2)
+        );
+
+        Message<PaymentEventMessage> message = MessageBuilder
+                .withPayload(payload)
+                .build();
+
         Consumer<Message<PaymentEventMessage>> consumer = handler.consume();
 
-        // when & then
-        assertThatCode(() -> consumer.accept(message))
-                .doesNotThrowAnyException();
+        given(doubleLedger.recordDoubleLedgerEntry(payload)).willReturn(expectedMessage);
+
+        // when
+        consumer.accept(message);
+
+        // then
+        verify(doubleLedger).recordDoubleLedgerEntry(payload);
+        verify(streamBridge).send("ledger", expectedMessage);
     }
 
     @Test
