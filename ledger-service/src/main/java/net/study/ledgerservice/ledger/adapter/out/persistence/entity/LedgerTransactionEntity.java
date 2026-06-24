@@ -1,4 +1,4 @@
-package net.study.ledgerservice.ledger.adapter.out.entity;
+package net.study.ledgerservice.ledger.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

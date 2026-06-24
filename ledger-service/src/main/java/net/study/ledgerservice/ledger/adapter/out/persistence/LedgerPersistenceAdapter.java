@@ -2,7 +2,7 @@ package net.study.ledgerservice.ledger.adapter.out.persistence;
 
 import lombok.RequiredArgsConstructor;
 import net.study.ledgerservice.common.PersistenceAdapter;
-import net.study.ledgerservice.ledger.adapter.out.repository.JpaLedgerTransactionRepository;
+import net.study.ledgerservice.ledger.adapter.out.persistence.repository.JpaLedgerTransactionRepository;
 import net.study.ledgerservice.ledger.application.port.out.DuplicateMessageFilterPort;
 import net.study.ledgerservice.ledger.domain.PaymentEventMessage;
 
