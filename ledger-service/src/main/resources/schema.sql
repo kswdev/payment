@@ -22,3 +22,9 @@ CREATE TABLE ledger_entries {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(transaction_id) REFERENCES accounts(id)
 }
+
+CREATE TABLE payment_orders {
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    amount DECIMAL(15, 2) NOT NULL,
+    order_id VARCHAR NOT NULL,
+}
