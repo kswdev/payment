@@ -1,6 +1,7 @@
 package net.study.ledgerservice.ledger.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 @Entity
@@ -25,4 +26,13 @@ public class LedgerTransactionEntity {
 
     @Column(name = "idempotency_key")
     private String idempotencyKey;
+
+    @Builder
+    public LedgerTransactionEntity(String description, Long referenceId, String referenceType, String orderId, String idempotencyKey) {
+        this.description = description;
+        this.referenceId = referenceId;
+        this.referenceType = referenceType;
+        this.orderId = orderId;
+        this.idempotencyKey = idempotencyKey;
+    }
 }
