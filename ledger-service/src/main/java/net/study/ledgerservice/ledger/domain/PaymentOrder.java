@@ -1,12 +1,11 @@
 package net.study.ledgerservice.ledger.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
-public class PaymentOrder {
-    private Long id;
-    private Long amount;
-    private String orderId;
+public class PaymentOrder extends Item {
+
+    public PaymentOrder(Long id, Long amount, String orderId) {
+        super(id, amount, orderId, ReferenceType.PAYMENT_ORDER);
+    }
 }
