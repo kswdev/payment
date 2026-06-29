@@ -55,6 +55,7 @@ public class PaymentEvent {
     public Long totalAmount() {
         return this.paymentOrders.stream()
                 .map(PaymentOrder::getAmount)
+                .map(BigDecimal::valueOf)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .longValue();
     }

@@ -43,7 +43,7 @@ public class CheckoutService implements CheckoutUseCase {
                                 .sellerId(product.getSellerId())
                                 .orderId(command.idempotencyKey())
                                 .productId(product.getId())
-                                .amount(product.getAmount())
+                                .amount(product.getAmount().longValue())
                                 .paymentStatus(PaymentStatus.NOT_STARTED)
                                 .build())
                         .toList())

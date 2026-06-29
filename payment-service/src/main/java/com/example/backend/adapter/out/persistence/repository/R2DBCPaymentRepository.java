@@ -1,19 +1,15 @@
 package com.example.backend.adapter.out.persistence.repository;
 
-import com.example.backend.domain.PaymentEvent;
-import com.example.backend.domain.PaymentStatus;
-import com.example.backend.domain.PendingPaymentEvent;
-import com.example.backend.domain.PendingPaymentOrder;
+import com.example.backend.domain.*;
 import com.example.backend.util.CustomDateTimeFormatter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.r2dbc.dialect.MySqlDialect;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -24,6 +20,7 @@ public class R2DBCPaymentRepository implements PaymentRepository {
 
     private final DatabaseClient databaseClient;
     private final TransactionalOperator transactionalOperator;
+    private final ObjectMapper objectMapper;
 
     @Override
     public Flux<PendingPaymentEvent> getPendingPayments() {
@@ -43,7 +40,7 @@ public class R2DBCPaymentRepository implements PaymentRepository {
                                                         PendingPaymentOrder.builder()
                                                                 .paymentOrderId((Long) resultMap.get("payment_order_id"))
                                                                 .paymentStatus(PaymentStatus.get((String) resultMap.get("order_status")))
-                                                                .amount(((BigDecimal) resultMap.get("amount")).longValue())
+                                                                .amount((Long) resultMap.get("amount"))
                                                                 .failedCount((Byte) resultMap.get("failed_count"))
                                                                 .threshold((Byte) resultMap.get("threshold"))
                                                                 .build())
@@ -61,6 +58,38 @@ public class R2DBCPaymentRepository implements PaymentRepository {
                 .flatMap(paymentEventId -> insertPaymentOrders(paymentEvent, paymentEventId))
                 .as(transactionalOperator::transactional)
                 .then();
+    }
+
+    @Override
+    public Mono<PaymentEvent> getPayment(String orderId) {
+        return databaseClient.sql(SELECT_PAYMENT_EVENT)
+                .bind("order_id", orderId)
+                .fetch()
+                .all()
+                .collectList()
+                .map(results -> PaymentEvent.builder()
+                                .id((Long) results.getFirst().get("payment_event_id"))
+                                .orderId((String) results.getFirst().get("order_id"))
+                                .buyerId((Long) results.getFirst().get("buyer_id"))
+                                .orderName((String) results.getFirst().get("order_name"))
+                                .isPaymentDone((int) results.getFirst().get("is_payment_done") == 1)
+                                .paymentOrders(
+                                        results.stream()
+                                                .map(result -> PaymentOrder.builder()
+                                                        .id((Long) result.get("payment_order_id"))
+                                                        .paymentEventId((Long) results.getFirst().get("payment_event_id"))
+                                                        .sellerId((Long) result.get("seller_id"))
+                                                        .orderId((String) result.get("order_id"))
+                                                        .amount((Long) result.get("amount"))
+                                                        .paymentStatus(PaymentStatus.get((String) result.get("payment_order_status")))
+                                                        .isLedgerUpdated((int) result.get("ledger_updated") == 1)
+                                                        .isLedgerUpdated((int) result.get("wallet_updated") == 1)
+                                                        .build()
+                                                )
+                                                .toList()
+                                )
+                                .build()
+                );
     }
 
     private Mono<Long> insertPaymentOrders(PaymentEvent paymentEvent, Long paymentEventId) {
@@ -117,5 +146,28 @@ public class R2DBCPaymentRepository implements PaymentRepository {
     private static final String INSERT_PAYMENT_ORDER_QUERY = """
                 INSERT INTO payment_order (payment_event_id, seller_id, order_id, product_id, amount, order_status)
                 VALUES
+    """.trim();
+
+    private static final String SELECT_PAYMENT_EVENT = """
+                SELECT pe.id as payment_event_id,
+                       po.id as payment_order_id,
+                       pe.order_id,
+                       pe.order_name,
+                       pe.buyer_id,
+                       pe.payment_key,
+                       pe.type as payment_type,
+                       pe.method as payment_method,
+                       pe.approved_at,
+                       pe.is_payment_done,
+                       po.seller_id,
+                       po.product_id,
+                       po.order_status as payment_order_status,
+                       po.amount,
+                       po.ledger_updated,
+                       po.wallet_updated,
+                  FROM payment_event pe
+            INNER JOIN payment_order po
+                    ON pe.order_id = po.order_id
+                 WHERE pe.order_id = :order_id
     """.trim();
 }
