@@ -23,12 +23,15 @@ public class PaymentPersistenceAdapter implements
         PaymentStatusUpdatePort,
         PaymentValidationPort,
         LoadPendingPaymentPort,
-        LoadPendingPaymentEventMessagePort {
+        LoadPendingPaymentEventMessagePort,
+        LoadPaymentPort
+{
 
     private final PaymentRepository paymentRepository;
     private final PaymentOutboxRepository paymentOutboxRepository;
     private final PaymentStatusUpdateRepository paymentStatusUpdateRepository;
     private final PaymentValidationRepository paymentValidationRepository;
+    private final LoadPaymentPort loadPaymentPort;
 
     @Override
     public Mono<Void> save(PaymentEvent paymentEvent) {
@@ -58,5 +61,10 @@ public class PaymentPersistenceAdapter implements
     @Override
     public Flux<PaymentEventMessage> getPendingPaymentEventMessage() {
         return paymentOutboxRepository.getPendingPaymentOutboxes();
+    }
+
+    @Override
+    public Mono<PaymentEvent> getPayment(String orderId) {
+        return loadPaymentPort.getPayment(orderId);
     }
 }
