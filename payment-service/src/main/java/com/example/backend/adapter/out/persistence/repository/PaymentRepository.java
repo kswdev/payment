@@ -8,5 +8,6 @@ import reactor.core.publisher.Mono;
 public interface PaymentRepository {
 
     Mono<Void> save(PaymentEvent paymentEvent);
+    Mono<PaymentEvent> getPayment(String orderId);
     Flux<PendingPaymentEvent> getPendingPayments();
 }
