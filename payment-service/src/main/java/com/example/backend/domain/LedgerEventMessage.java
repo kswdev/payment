@@ -7,19 +7,19 @@ import lombok.Getter;
 import java.util.Map;
 
 @Getter
-public class WalletEventMessage {
+public class LedgerEventMessage {
     private final Type type;
     private Map<String, ?> payload;
     private Map<String, ?> metadata;
 
     @JsonCreator
-    public WalletEventMessage(@JsonProperty("type") Type type) {
+    public LedgerEventMessage(@JsonProperty("type") Type type) {
         this.type = type;
     }
 
     @Getter
     public enum Type {
-        SUCCESS("정산 처리 성공");
+        SUCCESS("장부 기입 성공");
 
         Type(String description) {
             this.description = description;
