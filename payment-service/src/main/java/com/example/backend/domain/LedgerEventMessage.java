@@ -17,6 +17,10 @@ public class LedgerEventMessage {
         this.type = type;
     }
 
+    public String orderId() {
+        return payload.get("orderId").toString();
+    }
+
     @Getter
     public enum Type {
         SUCCESS("장부 기입 성공");

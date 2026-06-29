@@ -27,4 +27,8 @@ public class WalletEventMessage {
 
         private final String description;
     }
+
+    public String orderId() {
+        return payload.get("orderId").toString();
+    }
 }
