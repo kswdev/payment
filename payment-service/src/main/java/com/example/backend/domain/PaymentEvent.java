@@ -59,4 +59,32 @@ public class PaymentEvent {
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .longValue();
     }
+
+    public void confirmWalletUpdate() {
+        paymentOrders.forEach(PaymentOrder::confirmWalletUpdate);
+    }
+
+    public void confirmLedgerUpdate() {
+        paymentOrders.forEach(PaymentOrder::confirmLedgerUpdate);
+    }
+
+    public void completeIfDone() {
+        if (allPaymentOrdersDone())
+            isPaymentDone = true;
+    }
+
+    private boolean allPaymentOrdersDone() {
+        return paymentOrders.stream()
+                .allMatch(PaymentOrder::isDone);
+    }
+
+    public boolean isLedgerUpdateDone() {
+        return paymentOrders.stream()
+                .allMatch(PaymentOrder::isLedgerUpdated);
+    }
+
+    public boolean isWalletUpdateDone() {
+        return paymentOrders.stream()
+                .allMatch(PaymentOrder::isWalletUpdated);
+    }
 }

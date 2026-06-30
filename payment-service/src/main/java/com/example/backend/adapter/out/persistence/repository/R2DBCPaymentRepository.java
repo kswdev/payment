@@ -10,6 +10,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -40,7 +41,7 @@ public class R2DBCPaymentRepository implements PaymentRepository {
                                                         PendingPaymentOrder.builder()
                                                                 .paymentOrderId((Long) resultMap.get("payment_order_id"))
                                                                 .paymentStatus(PaymentStatus.get((String) resultMap.get("order_status")))
-                                                                .amount((Long) resultMap.get("amount"))
+                                                                .amount(((BigDecimal) resultMap.get("amount")).longValue())
                                                                 .failedCount((Byte) resultMap.get("failed_count"))
                                                                 .threshold((Byte) resultMap.get("threshold"))
                                                                 .build())
@@ -49,6 +50,19 @@ public class R2DBCPaymentRepository implements PaymentRepository {
                                 .build()
                         )
                 );
+    }
+
+    @Override
+    public Mono<Void> complete(PaymentEvent paymentEvent) {
+        if (paymentEvent.isPaymentDone()) {
+            return handlePaymentCompletion(paymentEvent);
+        } else if (paymentEvent.isLedgerUpdateDone()) {
+            return handleLedgerUpdate(paymentEvent);
+        } else if (paymentEvent.isWalletUpdateDone()) {
+            return handleWalletUpdate(paymentEvent);
+        } else {
+            throw new IllegalStateException("Incorrect state for PaymentEvent id: " + paymentEvent.getId());
+        }
     }
 
     @Override
@@ -120,6 +134,40 @@ public class R2DBCPaymentRepository implements PaymentRepository {
                 .fetch()
                 .rowsUpdated();
     }
+
+    private Mono<Void> handlePaymentCompletion(PaymentEvent paymentEvent) {
+        return Mono.when(
+                handleWalletUpdate(paymentEvent),
+                handleLedgerUpdate(paymentEvent)
+        ).then(Mono.defer(() -> completePaymentEvent(paymentEvent)));
+    }
+
+    private Mono<Void> completePaymentEvent(PaymentEvent paymentEvent) {
+        return databaseClient.sql(UPDATE_PAYMENT_EVENT_DONE)
+                .bind("orderId", paymentEvent.getOrderId())
+                .fetch()
+                .rowsUpdated()
+                .then();
+    }
+
+    private Mono<Void> handleWalletUpdate(PaymentEvent paymentEvent) {
+        return databaseClient
+                .sql(UPDATE_PAYMENT_ORDER_WALLET_DONE)
+                .bind("orderId", paymentEvent.getOrderId())
+                .fetch()
+                .rowsUpdated()
+                .then();
+    }
+
+    private Mono<Void> handleLedgerUpdate(PaymentEvent paymentEvent) {
+        return databaseClient
+                .sql(UPDATE_PAYMENT_ORDER_LEDGER_DONE)
+                .bind("orderId", paymentEvent.getOrderId())
+                .fetch()
+                .rowsUpdated()
+                .then();
+    }
+
     private static final String SELECT_PENDING_PAYMENT_EVENTS = """
                 SELECT pe.id as payment_event_id,
                        pe.order_id,
@@ -169,5 +217,23 @@ public class R2DBCPaymentRepository implements PaymentRepository {
             INNER JOIN payment_order po
                     ON pe.order_id = po.order_id
                  WHERE pe.order_id = :order_id
+    """.trim();
+
+    private static final String UPDATE_PAYMENT_ORDER_LEDGER_DONE = """
+        UPDATE payment_order
+           SET ledger_updated = true
+         WHERE order_id = :orderId
+    """.trim();
+
+    private static final String UPDATE_PAYMENT_ORDER_WALLET_DONE = """
+        UPDATE payment_order
+           SET wallet_updated = true
+         WHERE order_id = :orderId
+    """.trim();
+
+    private static final String UPDATE_PAYMENT_EVENT_DONE = """
+        UPDATE payment_event
+           SET is_payment_done = true
+         WHERE order_id = :orderId
     """.trim();
 }

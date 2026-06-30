@@ -3,8 +3,6 @@ package com.example.backend.domain;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.math.BigDecimal;
-
 @Getter
 public class PaymentOrder {
     private Long id;
@@ -32,5 +30,17 @@ public class PaymentOrder {
         this.isLedgerUpdated = isLedgerUpdated;
         this.isWalletUpdated = isWalletUpdated;
         this.isPaymentDone = isPaymentDone;
+    }
+
+    public void confirmWalletUpdate() {
+        isWalletUpdated = true;
+    }
+
+    public void confirmLedgerUpdate() {
+        isLedgerUpdated = true;
+    }
+
+    public Boolean isDone() {
+        return isWalletUpdated && isLedgerUpdated;
     }
 }

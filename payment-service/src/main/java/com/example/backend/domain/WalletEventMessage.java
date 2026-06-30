@@ -17,6 +17,17 @@ public class WalletEventMessage {
         this.type = type;
     }
 
+    @JsonCreator
+    public WalletEventMessage(
+            @JsonProperty("type") Type type,
+            @JsonProperty("payload") Map<String, ?> payload,
+            @JsonProperty("metadata") Map<String, ?> metadata
+    ) {
+        this.type = type;
+        this.payload = payload;
+        this.metadata = metadata;
+    }
+
     @Getter
     public enum Type {
         SUCCESS("정산 처리 성공");

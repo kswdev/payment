@@ -55,7 +55,7 @@ public class R2DBCPaymentDatabaseHelper implements PaymentDatabaseHelper {
                                                         .orderId((String) resultMap.get("order_id"))
                                                         .productId((Long) resultMap.get("product_id"))
                                                         .sellerId((Long) resultMap.get("seller_id"))
-                                                        .amount((Long) resultMap.get("amount"))
+                                                        .amount(((BigDecimal) resultMap.get("amount")).longValue())
                                                         .paymentStatus(PaymentStatus.valueOf((String) resultMap.get("order_status")))
                                                         .isLedgerUpdated(isLedgerUpdated)
                                                         .isWalletUpdated(isWalletUpdated)

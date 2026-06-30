@@ -24,14 +24,14 @@ public class PaymentPersistenceAdapter implements
         PaymentValidationPort,
         LoadPendingPaymentPort,
         LoadPendingPaymentEventMessagePort,
-        LoadPaymentPort
+        LoadPaymentPort,
+        CompletePaymentPort
 {
 
     private final PaymentRepository paymentRepository;
     private final PaymentOutboxRepository paymentOutboxRepository;
     private final PaymentStatusUpdateRepository paymentStatusUpdateRepository;
     private final PaymentValidationRepository paymentValidationRepository;
-    private final LoadPaymentPort loadPaymentPort;
 
     @Override
     public Mono<Void> save(PaymentEvent paymentEvent) {
@@ -65,6 +65,11 @@ public class PaymentPersistenceAdapter implements
 
     @Override
     public Mono<PaymentEvent> getPayment(String orderId) {
-        return loadPaymentPort.getPayment(orderId);
+        return paymentRepository.getPayment(orderId);
+    }
+
+    @Override
+    public Mono<Void> complete(PaymentEvent paymentEvent) {
+        return paymentRepository.complete(paymentEvent);
     }
 }

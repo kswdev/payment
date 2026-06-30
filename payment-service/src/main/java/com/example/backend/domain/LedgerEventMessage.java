@@ -17,6 +17,18 @@ public class LedgerEventMessage {
         this.type = type;
     }
 
+    @JsonCreator
+    public LedgerEventMessage(
+            @JsonProperty("type") Type type,
+            @JsonProperty("payload") Map<String, ?> payload,
+            @JsonProperty("metadata") Map<String, ?> metadata
+    ) {
+        this.type = type;
+        this.payload = payload;
+        this.metadata = metadata;
+    }
+
+
     public String orderId() {
         return payload.get("orderId").toString();
     }

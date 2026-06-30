@@ -17,7 +17,7 @@ import static java.util.concurrent.TimeUnit.*;
 @Slf4j
 @UseCase
 @Service
-@Profile("dev")
+//@Profile("dev")
 @RequiredArgsConstructor
 public class PaymentEventMessageRelayService implements PaymentEventMessageRelayUseCase {
 
